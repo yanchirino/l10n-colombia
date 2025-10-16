@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Regla para facturas electrónicas -->
+    <record id="edi_exchange_type_rule_invoice_out" model="edi.exchange.type.rule">
+        <field name="name">Factura Electrónica DIAN (Producción)</field>
+        <field name="type_id" ref="edi_exchange_type_invoice_out" />
+        <field name="model_id" ref="account.model_account_move" />
+        <field
+            name="enable_domain"
+        >[('move_type', '=', 'out_invoice'), ('country_code', '=', 'CO'), ('state', '=', 'posted'),('journal_id.l10n_co_dian_operation_mode', '=', 'production'),('payment_state', '!=', 'reversed')]</field>
+        <field
+            name="enable_snippet"
+        >result = record._enable_edi_oca_enable_snippet(exchange_type) </field>
+    </record>
+
+    <record id="edi_exchange_type_rule_invoice_out_test" model="edi.exchange.type.rule">
+        <field name="name">Factura Electrónica DIAN (Habilitación)</field>
+        <field name="type_id" ref="edi_exchange_type_invoice_out_test" />
+        <field name="model_id" ref="account.model_account_move" />
+        <field
+            name="enable_domain"
+        >[('move_type', '=', 'out_invoice'), ('country_code', '=', 'CO'), ('state', '=', 'posted'),('journal_id.l10n_co_dian_operation_mode', '=', 'test'),('payment_state','!=', 'reversed')]</field>
+        <field
+            name="enable_snippet"
+        >result = record._enable_edi_oca_enable_snippet(exchange_type) and record.journal_id.l10n_co_dian_operation_mode == 'test'</field>
+    </record>
+
+    <!-- Regla para notas crédito electrónicas -->
+    <record id="edi_exchange_type_rule_refund_out" model="edi.exchange.type.rule">
+        <field name="name">Nota Crédito Electrónica DIAN (Producción)</field>
+        <field name="type_id" ref="edi_exchange_type_refund_out" />
+        <field name="model_id" ref="account.model_account_move" />
+        <field
+            name="enable_domain"
+        >[('move_type', '=', 'out_refund'), ('country_code', '=', 'CO'), ('state', '=', 'posted'),('journal_id.l10n_co_dian_operation_mode', '=', 'production')]</field>
+        <field
+            name="enable_snippet"
+        >result = record._enable_edi_oca_enable_snippet(exchange_type)</field>
+    </record>
+
+    <record id="edi_exchange_type_rule_refund_out_test" model="edi.exchange.type.rule">
+        <field name="name">Nota Crédito Electrónica DIAN (Habilitación)</field>
+        <field name="type_id" ref="edi_exchange_type_refund_out_test" />
+        <field name="model_id" ref="account.model_account_move" />
+        <field
+            name="enable_domain"
+        >[('move_type', '=', 'out_refund'), ('country_code', '=', 'CO'), ('state', '=', 'posted'),('journal_id.l10n_co_dian_operation_mode', '=', 'test')]</field>
+        <field
+            name="enable_snippet"
+        >result = record._enable_edi_oca_enable_snippet(exchange_type)</field>
+    </record>
+
+    <!-- Regla para consulta de rangos numeración -->
+    <record
+        id="edi_exchange_type_rule_invoice_out_resolution"
+        model="edi.exchange.type.rule"
+    >
+        <field name="name">Consulta Rangos Numeración Electrónica DIAN</field>
+        <field name="type_id" ref="edi_exchange_type_numbering_range_query_out" />
+        <field name="model_id" ref="account.model_account_journal" />
+        <field
+            name="enable_domain"
+        >[('l10n_co_dian_operation_mode', '=', 'production')]</field>
+        <field
+            name="enable_snippet"
+        >result = record._enable_edi_oca_enable_snippet()</field>
+    </record>
+</odoo>

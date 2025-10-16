@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Configuración del tipo de intercambio para facturas electrónicas -->
+    <record id="edi_exchange_type_invoice_out" model="edi.exchange.type">
+        <field name="name">Enviar Factura Electrónica DIAN</field>
+        <field name="code">invoice_out</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_default" />
+        <field name="direction">output</field>
+        <field name="exchange_filename_pattern">{record.name}_{record.id}</field>
+        <field name="exchange_file_ext">xml</field>
+        <field name="exchange_file_auto_generate" eval="True" />
+        <field name="quick_exec" eval="True" />
+        <field
+            name="output_template_allowed_ids"
+            eval="[(6, 0, [ref('l10n_co_electronic_invoice_self.edi_exchange_template_invoice_out')])]"
+        />
+        <field
+            name="output_template_id"
+            ref="l10n_co_electronic_invoice_self.edi_exchange_template_invoice_out"
+        />
+        <field
+            name="generate_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="send_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="l10n_co_dian_webservice_action"
+        >http://wcf.dian.colombia/IWcfDianCustomerServices/SendBillSync</field>
+        <field name="l10n_co_dian_document_requires_signature" eval="True" />
+    </record>
+
+    <record id="edi_exchange_type_invoice_out_test" model="edi.exchange.type">
+        <field name="name">Enviar Factura Electrónica DIAN (Habilitación)</field>
+        <field name="code">invoice_out_test</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_test" />
+        <field name="direction">output</field>
+        <field name="exchange_filename_pattern">{record.name}_{record.id}</field>
+        <field name="exchange_file_ext">xml</field>
+        <field name="exchange_file_auto_generate" eval="True" />
+        <field name="quick_exec" eval="True" />
+        <field
+            name="output_template_allowed_ids"
+            eval="[(6, 0, [ref('l10n_co_electronic_invoice_self.edi_exchange_template_invoice_out')])]"
+        />
+        <field
+            name="output_template_id"
+            ref="l10n_co_electronic_invoice_self.edi_exchange_template_invoice_out"
+        />
+        <field
+            name="generate_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="send_model_id"
+            ref="edi_component_oca.model_edi_oca_component_handler"
+        />
+        <field
+            name="l10n_co_dian_webservice_action"
+        >http://wcf.dian.colombia/IWcfDianCustomerServices/SendTestSetAsync</field>
+        <field name="l10n_co_dian_document_requires_signature" eval="True" />
+    </record>
+
+    <!-- Configuración del tipo de intercambio para notas crédito electrónicas -->
+    <record id="edi_exchange_type_refund_out" model="edi.exchange.type">
+        <field name="name">Enviar Nota Crédito Electrónica DIAN</field>
+        <field name="code">refund_out</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_default" />
+        <field name="direction">output</field>
+        <field name="exchange_filename_pattern">{record.name}_{record.id}</field>
+        <field name="exchange_file_ext">xml</field>
+        <field name="exchange_file_auto_generate" eval="True" />
+        <field name="quick_exec" eval="True" />
+        <field
+            name="output_template_allowed_ids"
+            eval="[(6, 0, [ref('l10n_co_electronic_invoice_self.edi_exchange_template_refund_out')])]"
+        />
+        <field
+            name="output_template_id"
+            ref="l10n_co_electronic_invoice_self.edi_exchange_template_refund_out"
+        />
+        <field
+            name="generate_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="send_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="l10n_co_dian_webservice_action"
+        >http://wcf.dian.colombia/IWcfDianCustomerServices/SendBillSync</field>
+        <field name="l10n_co_dian_document_requires_signature" eval="True" />
+    </record>
+
+    <record id="edi_exchange_type_refund_out_test" model="edi.exchange.type">
+        <field name="name">Enviar Nota Crédito Electrónica DIAN (Habilitación)</field>
+        <field name="code">refund_out_test</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_test" />
+        <field name="direction">output</field>
+        <field name="exchange_filename_pattern">{record.name}_{record.id}</field>
+        <field name="exchange_file_ext">xml</field>
+        <field name="exchange_file_auto_generate" eval="True" />
+        <field name="quick_exec" eval="True" />
+        <field
+            name="output_template_allowed_ids"
+            eval="[(6, 0, [ref('l10n_co_electronic_invoice_self.edi_exchange_template_refund_out')])]"
+        />
+        <field
+            name="output_template_id"
+            ref="l10n_co_electronic_invoice_self.edi_exchange_template_refund_out"
+        />
+        <field
+            name="generate_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="send_model_id"
+            ref="edi_component_oca.model_edi_oca_component_handler"
+        />
+        <field
+            name="l10n_co_dian_webservice_action"
+        >http://wcf.dian.colombia/IWcfDianCustomerServices/SendTestSetAsync</field>
+        <field name="l10n_co_dian_document_requires_signature" eval="True" />
+    </record>
+
+    <!-- Configuración del tipo de intercambio para consulta de rangos numeración -->
+    <record
+        id="edi_exchange_type_numbering_range_query_out_response"
+        model="edi.exchange.type"
+    >
+        <field name="name">Rangos Numeración Electrónica DIAN - Respuesta</field>
+        <field name="code">get_numbering_range_response</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_default" />
+        <field name="direction">input</field>
+        <field name="exchange_file_auto_generate" eval="False" />
+        <field name="quick_exec" eval="True" />
+        <field name="exchange_file_ext">xml</field>
+        <field
+            name="exchange_filename_pattern"
+        >dian_numbering_range_on_{exchange_record.create_date}</field>
+    </record>
+
+    <record id="edi_exchange_type_numbering_range_query_out" model="edi.exchange.type">
+        <field name="name">Obtener Rangos Numeración DIAN</field>
+        <field name="code">get_numbering_range</field>
+        <field name="backend_type_id" ref="edi_backend_type_dian_self" />
+        <field name="backend_id" ref="edi_backend_dian_self_default" />
+        <field
+            name="ack_type_id"
+            ref="edi_exchange_type_numbering_range_query_out_response"
+        />
+        <field
+            name="exchange_filename_pattern"
+        >dian_numbering_range_on_{exchange_record.create_date}</field>
+        <field name="exchange_file_ext">xml</field>
+        <field name="direction">output</field>
+        <field name="exchange_file_auto_generate" eval="True" />
+        <field name="quick_exec" eval="True" />
+        <field
+            name="output_template_allowed_ids"
+            eval="[(6, 0, [ref('l10n_co_electronic_invoice_self.edi_exchange_template_numbering_range_query_out')])]"
+        />
+        <field
+            name="output_template_id"
+            ref="l10n_co_electronic_invoice_self.edi_exchange_template_numbering_range_query_out"
+        />
+        <field
+            name="generate_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="send_model_id"
+            ref="l10n_co_electronic_invoice_self.model_l10n_co_dian_self_output_handler"
+        />
+        <field
+            name="l10n_co_dian_webservice_action"
+        >http://wcf.dian.colombia/IWcfDianCustomerServices/GetNumberingRange</field>
+        <field name="l10n_co_dian_document_requires_signature" eval="False" />
+    </record>
+</odoo>

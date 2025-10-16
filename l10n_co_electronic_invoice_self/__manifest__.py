@@ -1,0 +1,43 @@
+# Copyright 2025 IKU Solutions - Yan Chirino <yan.chirino@iku.solutions>
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+{
+    "name": "Colombia - Factura Electrónica Software Propio",
+    "version": "18.0.1.0.0",
+    "category": "Accounting/Localizations",
+    "summary": "Integración con la DIAN Colombia para la emisión\
+        de Facturas Electrónicas en modo de operación software propio",
+    "author": "Yan Chirino, Odoo Community Association (OCA)",
+    "website": "https://github.com/OCA/l10n-colombia",
+    "license": "AGPL-3",
+    "depends": [
+        "account_edi_ubl_cii",
+        "l10n_co_electronic_invoice",
+        "certificate",
+        "edi_core_oca",
+        "edi_component_oca",
+        "edi_exchange_template_oca",
+        "edi_webservice_oca",
+        "edi_xml_oca",
+        "edi_account_oca",
+        "webservice",
+    ],
+    "data": [
+        "data/webservice_backend.xml",
+        "data/edi_backend_type.xml",
+        "data/edi_backend.xml",
+        "data/edi_exchange_template.xml",
+        "data/edi_exchange_type.xml",
+        "data/edi_exchange_type_rule.xml",
+        "templates/soap_envelope.xml",
+        "templates/invoice_ubl.xml",
+        "templates/credit_note_ubl.xml",
+        "templates/numbering_range_query.xml",
+        "views/account_journal_views.xml",
+        "views/edi_exchange_record.xml",
+        "views/edi_exchange_type.xml",
+    ],
+    "external_dependencies": {"python": ["xmlsig", "lxml", "cryptography"]},
+    "application": False,
+    "auto_install": False,
+    "installable": True,
+}

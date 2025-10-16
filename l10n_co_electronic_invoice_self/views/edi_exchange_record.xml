@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="edi_exchange_record_view_form">
+        <field
+            name="name"
+        >edi.exchange.record.form (in l10n_co_electronic_invoice_self)</field>
+        <field name="model">edi.exchange.record</field>
+        <field name="inherit_id" ref="edi_core_oca.edi_exchange_record_view_form" />
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page
+                    name="dian_electronic_invoice"
+                    string="DIAN Factura Electrónica"
+                    invisible="type_id not in [
+                        %(l10n_co_electronic_invoice_self.edi_exchange_type_invoice_out)s,
+                        %(l10n_co_electronic_invoice_self.edi_exchange_type_refund_out)s
+                    ]"
+                >
+                    <group>
+                        <group name="dian_electronic_invoice_group">
+                            test1
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
