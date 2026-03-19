@@ -10,7 +10,10 @@
         <field name="inherit_id" ref="product.product_template_form_view" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='type']" position='after'>
+                <field name="product_brand" />
+                <field name="product_model" />
                 <field name="product_unspsc_id" />
+                <field name="l10n_co_edi_ref_nominal_tax" />
             </xpath>
         </field>
     </record>

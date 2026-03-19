@@ -29,13 +29,8 @@ class AccountMove(models.Model):
             ("16", "Venta Divisas"),
             ("20", "Nota Crédito que referencia una factura electrónica"),
             ("22", "Nota Crédito sin referencia a facturas"),
-            ("23", "Nota Crédito para facturación electrónica V1 (Decreto 2242)"),
             ("30", "Nota Débito que referencia una factura electrónica"),
             ("32", "Nota Débito sin referencia a facturas"),
-            (
-                "23",
-                "Inactivo: Nota Crédito para facturación electrónica V1 (Decreto 2242)",
-            ),
             (
                 "33",
                 "Inactivo: Nota Débito para facturación electrónica V1 (Decreto 2242)",
@@ -44,6 +39,52 @@ class AccountMove(models.Model):
         string="Operation Type (CO)",
         compute="_compute_operation_type",
         store=True,
+    )
+    l10n_co_invoice_period_start = fields.Date(
+        string="Periodo Inicio",
+        help="Fecha de inicio del periodo de facturación que "
+        "modifica esta nota crédito/débito. Obligatorio "
+        "para NC/ND sin referencia a factura (DIAN CAE02).",
+    )
+    l10n_co_invoice_period_end = fields.Date(
+        string="Periodo Fin",
+        help="Fecha de fin del periodo de facturación que "
+        "modifica esta nota crédito/débito. Obligatorio "
+        "para NC/ND sin referencia a factura (DIAN CAE04).",
+    )
+    l10n_co_discrepancy_response_code = fields.Selection(
+        selection=[
+            (
+                "nc_1",
+                "NC - Devolución parcial de los bienes y/o "
+                "no aceptación parcial del servicio",
+            ),
+            (
+                "nc_2",
+                "NC - Anulación de factura electrónica",
+            ),
+            (
+                "nc_3",
+                "NC - Rebaja o descuento parcial o total",
+            ),
+            ("nc_4", "NC - Ajuste de precio"),
+            (
+                "nc_5",
+                "NC - Descuento comercial por pronto pago",
+            ),
+            (
+                "nc_6",
+                "NC - Descuento comercial por volumen " "de ventas",
+            ),
+            ("nd_1", "ND - Intereses"),
+            ("nd_2", "ND - Gastos por cobrar"),
+            ("nd_3", "ND - Cambio del valor"),
+            ("nd_4", "ND - Otros"),
+        ],
+        string="Concepto de Corrección",
+    )
+    l10n_co_edi_cufe_cude_ref = fields.Char(
+        string="CUFE/CUDE", copy=False, readonly=True
     )
     l10n_co_dian_status = fields.Selection(
         selection=[
@@ -58,17 +99,43 @@ class AccountMove(models.Model):
     l10n_co_dian_generation_date = fields.Datetime(
         string="Fecha de generación del documento"
     )
+    l10n_co_dian_zip_key = fields.Char(
+        string="ZipKey DIAN",
+        copy=False,
+        readonly=True,
+        help="TrackId/ZipKey retornado por SendTestSetAsync. "
+        "Se usa para consultar el estado con GetStatusZip.",
+    )
+
+    @api.depends(
+        "move_type",
+        "l10n_latam_document_type_id",
+        "reversed_entry_id",
+        "debit_origin_id",
+    )
+    def _compute_operation_type(self):
+        for move in self:
+            doc_code = move.l10n_latam_document_type_id.code or False
+            if move.move_type in ("out_refund", "in_refund"):
+                if move.reversed_entry_id:
+                    move.l10n_co_dian_operation_type = "20"
+                else:
+                    move.l10n_co_dian_operation_type = "22"
+            elif move.debit_origin_id:
+                move.l10n_co_dian_operation_type = "30"
+            elif doc_code in ("01", "02", "03", "05"):
+                move.l10n_co_dian_operation_type = "10"
+            else:
+                move.l10n_co_dian_operation_type = False
 
     @api.depends("l10n_latam_use_documents", "l10n_latam_document_type_id")
     def _compute_show_reset_to_draft_button(self):
         super()._compute_show_reset_to_draft_button()
-        # Las Factruas enviadas a al servicio de la DIAN no se pueden editar,
-        # solo crear notas de credito o debito.
         for move in self.filtered(
-            lambda move: move.move_type
-            in ["out_invoice", "out_refund", "in_invoice", "in_refund"]
-            and move.l10n_latam_use_documents
+            lambda m: m.move_type
+            in ("out_invoice", "out_refund", "in_invoice", "in_refund")
+            and m.l10n_latam_use_documents
         ):
-            if move.l10n_co_dian_status in ["sent", "accepted"]:
+            if move.l10n_co_dian_status in ("sent", "accepted"):
                 move.show_reset_to_draft_button = False
         return

@@ -16,7 +16,12 @@ from lxml import etree
 from odoo import _
 from odoo.exceptions import UserError
 
-from ..utils.constants import NSD
+from ..utils.constants import (
+    DEFAULT_POLICY_ID,
+    DEFAULT_POLICY_NAME,
+    NSD,
+    POLICY_HASH_VALUE,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -30,29 +35,13 @@ class XMLSigner:
         self.private_key = private_key
 
     def sign_xml(self, xml_content):
-        """
-        Firmar XML según estándares DIAN Colombia.
-
-        :param xml_content: Contenido XML a firmar
-        :param certificate: Certificado a usar para firmar
-        :return: XML firmado
-        """
         try:
-            # Firmar el XML
-            signed_xml = self._sign_file(xml_content)
-            return signed_xml
+            return self._document_sign(xml_content)
         except Exception as e:
             _logger.error("Error al firmar XML: %s", str(e))
             raise UserError(_("Error al firmar el XML: %s") % str(e)) from e
 
     def _document_sign(self, xml_content):
-        """
-        Firmar archivo XML usando xmlsig (basado en implementación de España).
-
-        :param xml_content: Contenido XML a firmar
-        :return: XML firmado
-        """
-        # Generar IDs únicos para la firma
         rand_min = 1
         rand_max = 99999
         signature_id = "Signature%05d" % random.randint(rand_min, rand_max)
@@ -63,38 +52,28 @@ class XMLSigner:
         reference_id = "Reference%05d" % random.randint(rand_min, rand_max)
         object_id = "Object%05d" % random.randint(rand_min, rand_max)
 
-        # Namespaces para XAdES
         etsi = "http://uri.etsi.org/01903/v1.3.2#"
 
-        # Política de firma específica para DIAN Colombia
-        sig_policy_identifier = (
-            "https://www.dian.gov.co/"
-            "politica_de_firma_electronica/"
-            "politica_de_firma_dian_v1_0.pdf"
-        )
-        sig_policy_hash_value = "DIAN_POLICY_HASH_VALUE"  # Valor específico de DIAN
+        sig_policy_identifier = DEFAULT_POLICY_ID
+        sig_policy_hash_value = POLICY_HASH_VALUE
 
-        # Parsear XML
         root = etree.fromstring(xml_content)
 
-        # Crear template de firma XMLDSig
         sign = xmlsig.template.create(
             c14n_method=xmlsig.constants.TransformInclC14N,
-            sign_method=xmlsig.constants.TransformRsaSha256,  # SHA256 para DIAN
+            sign_method=xmlsig.constants.TransformRsaSha256,
             name=signature_id,
             ns="ds",
         )
 
-        # Configurar KeyInfo
         key_info = xmlsig.template.ensure_key_info(sign, name=key_info_id)
         x509_data = xmlsig.template.add_x509_data(key_info)
         xmlsig.template.x509_data_add_certificate(x509_data)
         xmlsig.template.add_key_value(key_info)
 
-        # Agregar referencias
         xmlsig.template.add_reference(
             sign,
-            xmlsig.constants.TransformSha256,  # SHA256 para DIAN
+            xmlsig.constants.TransformSha256,
             uri="#" + signed_properties_id,
             uri_type="http://uri.etsi.org/01903#SignedProperties",
         )
@@ -106,7 +85,6 @@ class XMLSigner:
         )
         xmlsig.template.add_transform(ref, xmlsig.constants.TransformEnveloped)
 
-        # Crear objeto con propiedades firmadas (XAdES)
         object_node = etree.SubElement(
             sign,
             etree.QName(xmlsig.constants.DSigNs, "Object"),
@@ -126,18 +104,16 @@ class XMLSigner:
             attrib={xmlsig.constants.ID_ATTR: signed_properties_id},
         )
 
-        # Propiedades de firma firmadas
         signed_signature_properties = etree.SubElement(
             signed_properties, etree.QName(etsi, "SignedSignatureProperties")
         )
 
-        # Tiempo de firma
-        now = datetime.now().replace(microsecond=0, tzinfo=pytz.utc)
+        bogota_tz = pytz.timezone("America/Bogota")
+        now = datetime.now(pytz.utc).astimezone(bogota_tz)
         etree.SubElement(
             signed_signature_properties, etree.QName(etsi, "SigningTime")
-        ).text = now.isoformat()
+        ).text = now.isoformat(timespec="milliseconds")
 
-        # Certificado de firma
         signing_certificate = etree.SubElement(
             signed_signature_properties, etree.QName(etsi, "SigningCertificate")
         )
@@ -157,7 +133,6 @@ class XMLSigner:
             cert_digest, etree.QName(xmlsig.constants.DSigNs, "DigestValue")
         ).text = base64.b64encode(hash_cert.digest()).decode()
 
-        # Información del emisor y número de serie
         issuer_serial = etree.SubElement(
             signing_certificate_cert, etree.QName(etsi, "IssuerSerial")
         )
@@ -168,7 +143,6 @@ class XMLSigner:
             issuer_serial, etree.QName(xmlsig.constants.DSigNs, "X509SerialNumber")
         ).text = str(self.public_cert.serial_number)
 
-        # Identificador de política de firma
         signature_policy_identifier = etree.SubElement(
             signed_signature_properties,
             etree.QName(etsi, "SignaturePolicyIdentifier"),
@@ -184,9 +158,8 @@ class XMLSigner:
         ).text = sig_policy_identifier
         etree.SubElement(
             sig_policy_id, etree.QName(etsi, "Description")
-        ).text = "Política de Firma DIAN Colombia v1.0"
+        ).text = DEFAULT_POLICY_NAME
 
-        # Hash de la política de firma
         sig_policy_hash = etree.SubElement(
             signature_policy_id, etree.QName(etsi, "SigPolicyHash")
         )
@@ -199,19 +172,35 @@ class XMLSigner:
             sig_policy_hash, etree.QName(xmlsig.constants.DSigNs, "DigestValue")
         ).text = sig_policy_hash_value
 
-        # Agregar la firma al documento
+        signer_role = etree.SubElement(
+            signed_signature_properties, etree.QName(etsi, "SignerRole")
+        )
+        claimed_roles = etree.SubElement(signer_role, etree.QName(etsi, "ClaimedRoles"))
+        etree.SubElement(
+            claimed_roles, etree.QName(etsi, "ClaimedRole")
+        ).text = "supplier"
+
         root.append(sign)
 
-        # Crear contexto de firma y ejecutar
         ctx = xmlsig.SignatureContext()
         ctx.x509 = self.public_cert
         ctx.public_key = self.public_cert.public_key()
         ctx.private_key = self.private_key
 
-        # Ejecutar la firma
         ctx.sign(sign)
 
-        # Retornar XML firmado
+        ext_ns = (
+            "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
+        )
+        ubl_extensions = root.find(f"{{{ext_ns}}}UBLExtensions")
+        if ubl_extensions is not None:
+            ubl_extension_2 = ubl_extensions.findall(f"{{{ext_ns}}}UBLExtension")
+            if len(ubl_extension_2) >= 2:
+                ext_content = ubl_extension_2[1].find(f"{{{ext_ns}}}ExtensionContent")
+                if ext_content is not None:
+                    root.remove(sign)
+                    ext_content.append(sign)
+
         return etree.tostring(
             root, xml_declaration=True, encoding="UTF-8", standalone=True
         )
@@ -241,21 +230,21 @@ class XMLSigner:
             security.append(sign)  # type: ignore
 
             to_id = header.find("wsa:To", namespaces=NSD).attrib.get(
-                "{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Id"
+                "{http://docs.oasis-open.org/wss/2004/01/"
+                "oasis-200401-wss-wssecurity-utility-1.0.xsd}Id"
             )
             ref = xmlsig.template.add_reference(
                 node=sign,
                 digest_method=xmlsig.constants.TransformSha256,
                 uri=f"#{to_id}",
             )
-
             xmlsig.template.add_transform(
-                node=ref, transform=xmlsig.constants.TransformExclC14N
+                node=ref,
+                transform=xmlsig.constants.TransformExclC14N,
             )
             key_info = xmlsig.template.ensure_key_info(node=sign)
             key_info.attrib["Id"] = f"KI-{uuid.uuid1()}"
 
-            # Crear contexto de firma y ejecutar
             ctx = xmlsig.SignatureContext()
             ctx.x509 = self.public_cert
             ctx.public_key = self.public_cert.public_key()

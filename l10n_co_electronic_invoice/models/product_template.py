@@ -9,3 +9,10 @@ class ProductTemplate(models.Model):
     product_unspsc_id = fields.Many2one("product.unspsc", string="Producto UNSPSC")
     product_brand = fields.Char(string="Marca")
     product_model = fields.Char(string="Modelo")
+    l10n_co_edi_ref_nominal_tax = fields.Float(
+        string="Tarifa Nominal Impuesto Consumo",
+        help="Tarifa nominal del impuesto al consumo "
+        "(litros para licores, ml para cerveza). "
+        "Usado para cálculo de impuestos per-unit "
+        "(códigos 32, 34).",
+    )

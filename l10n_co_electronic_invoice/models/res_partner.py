@@ -22,9 +22,14 @@ class ResPartner(models.Model):
     )
 
     def _l10n_co_get_vat_splited(self):
+        """Split VAT into (nit, verification_digit).
+
+        For NIT (code 31) or any VAT with hyphen: '901193767-6' → ('901193767', '6')
+        For other types without hyphen: '12345678' → ('12345678', None)
+        """
         self.ensure_one()
-        if self.l10n_latam_identification_type_id.l10n_co_document_code != "07":
-            return self.vat, None
-        elif self.vat and "-" in self.vat:
-            return self.vat.split("-")
-        return self.vat[:-1], self.vat[-1] if self.vat else "", None
+        vat = self.vat or ""
+        if "-" in vat:
+            parts = vat.split("-", 1)
+            return parts[0], parts[1]
+        return vat, None

@@ -111,7 +111,7 @@ Credits
 Authors
 -------
 
-* Yan Chirino
+* IKU Solutions - Yan Chirino
 
 Contributors
 ------------

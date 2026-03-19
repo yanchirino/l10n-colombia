@@ -6,7 +6,7 @@
     "category": "Accounting/Localizations",
     "summary": "Campos y datos de pre-configuración para la\
         Factura Electrónica en Colombia",
-    "author": "Yan Chirino, Odoo Community Association (OCA)",
+    "author": "IKU Solutions - Yan Chirino, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/l10n-colombia",
     "license": "AGPL-3",
     "depends": [

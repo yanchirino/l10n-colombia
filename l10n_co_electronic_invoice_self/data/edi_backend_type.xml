@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<odoo>
-    <record id="edi_backend_type_dian_self" model="edi.backend.type">
-        <field name="name">DIAN Colombia - Software Propio</field>
-        <field name="code">l10n_co_dian_self</field>
-    </record>
-</odoo>
